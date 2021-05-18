@@ -202,8 +202,8 @@ class BorgesPastvaTrainer:
 
             cons = []
             for i in range(self.dim_simplex):
-                cons = cons + [{"type": "ineq", "fun": lambda x: x[i]}]
-            cons = cons + [{"type": "eq", "fun": lambda x: -np.sum(x) + 1}]
+                cons.append({"type": "ineq", "fun": lambda x: x[i]})
+            cons.append({"type": "eq", "fun": lambda x: -np.sum(x) + 1})
             res = minimize(l2norm, x0=tmp, constraints=cons)
             return res.x[0 : self.dim_simplex - 1]
 
@@ -297,6 +297,7 @@ class BorgesPastvaTrainer:
         else:
             print("input data is ndarray!!!")
         print("datashape", data.shape)
+
         # initialize parameter
         C_pre = copy.deepcopy(C_init)
         tt_init, xx_pre = self.initialize_parameter(c=C_pre, data=data)
@@ -316,8 +317,10 @@ class BorgesPastvaTrainer:
                     + "/meshgrid/meshgrid_itr_"
                     + "{0:03d}".format(itr),
                 )
+
             # update t
             tt_pos, xx_pos = self.update_parameter(c=C_pre, t_mat=tt_pre, data=data)
+
             # update control points
             C_pos = self.update_control_point(
                 t_mat=tt_pos,
@@ -367,6 +370,7 @@ class BorgesPastvaTrainer:
             filename=result_dir + "/meshgrid/meshgrid_itr_" + "{0:03d}".format(itr + 1),
         )
         np.savetxt(result_dir + "/meshgrid_itr" + "{0:03d}".format(itr + 1), xx)
+
         # calc gd and igd
         if data_val is None:
             pass
