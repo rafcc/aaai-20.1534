@@ -13,8 +13,8 @@ import trainer
 
 
 def main(ymlfilename, resultdir, borges_flag=1):
-    f = open(ymlfilename, "r+")
-    params = yaml.load(f)
+    with open(ymlfilename, "r+") as f:
+        params = yaml.load(f)
 
     subfunction.create_directory(resultdir)
 

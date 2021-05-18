@@ -9,8 +9,6 @@ import yaml
 def create_directory(dir_name):
     if not os.path.isdir(dir_name):
         os.makedirs(dir_name)
-    else:
-        pass
 
 
 def nonzero_indices(a):
@@ -159,6 +157,5 @@ def define_monomial(deg_b, dim_b):
 
 
 def write_result(result, fname):
-    f = open(fname, "w")
-    f.write(yaml.dump(result, default_flow_style=False))
-    f.close()
+    with open(fname, "w") as f:
+        f.write(yaml.dump(result, default_flow_style=False))
