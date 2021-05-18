@@ -274,15 +274,9 @@ class BezierSimplex:
 
 
 if __name__ == "__main__":
-    import os
-    import pickle
     from itertools import combinations
 
-    import numpy as np
-    import sympy
-
     import model
-    import subfunction
 
     DEGREE = 3  # ベジエ単体の次数
     DIM_SIMPLEX = 5  # ベジエ単体の次元
