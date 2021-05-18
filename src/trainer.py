@@ -186,7 +186,7 @@ class BorgesPastvaTrainer:
             if np.linalg.norm(f) > tolerance:
                 j = self.inner_product_jaccobian(c, t_k, x)
                 d = np.linalg.solve(j, f)
-                t_k = t_k - d
+                t_k -= d
             else:
                 break
         return t_k
@@ -278,11 +278,11 @@ class BorgesPastvaTrainer:
         start = time.time()
 
         # initialize control points
-        if C_init == None:
+        if C_init is None:
             C = self.initialize_control_point(data)
 
         # concat data
-        if isinstance(data, dict) == True:
+        if isinstance(data, dict):
             print("input data is dictionary!!!")
             index = 0
             for key in data:
@@ -372,9 +372,7 @@ class BorgesPastvaTrainer:
         np.savetxt(result_dir + "/meshgrid_itr" + "{0:03d}".format(itr + 1), xx)
 
         # calc gd and igd
-        if data_val is None:
-            pass
-        else:
+        if data_val:
             gd, igd = calc_gd_igd(dd1=data_val, dd2=xx)
             np.savetxt(result_dir + "/gd.txt", [gd])
             np.savetxt(result_dir + "/igd.txt", [igd])
