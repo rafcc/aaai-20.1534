@@ -59,9 +59,9 @@ def experiments_synthetic_data(
         param_trn, data_trn = synthetic_data.sampling_borges(
             n=n, seed=seed, sigma=sigma
         )
-        monomial_degree_list = [
-            i for i in subfunction.BezierIndex(dim=dimsimplex, deg=degree)
-        ]
+        monomial_degree_list = list(
+            subfunction.BezierIndex(dim=dimsimplex, deg=degree)
+        )
         borges_pastva_trainer = trainer.BorgesPastvaTrainer(
             dimSpace=dimspace, dimSimplex=dimsimplex, degree=degree
         )
@@ -82,9 +82,9 @@ def experiments_synthetic_data(
         param_trn, data_trn = synthetic_data.sampling_inductive(
             n=n, seed=seed, sample_size_list=train_sample_size_list, sigma=sigma
         )
-        monomial_degree_list = [
-            i for i in subfunction.BezierIndex(dim=dimsimplex, deg=degree)
-        ]
+        monomial_degree_list = list(
+            subfunction.BezierIndex(dim=dimsimplex, deg=degree)
+        )
         inductive_skeleton_trainer = trainer.InductiveSkeletonTrainer(
             dimSpace=dimspace, dimSimplex=dimsimplex, degree=degree
         )
@@ -127,8 +127,8 @@ def experiments_synthetic_data(
 
     ymlfilename = results_dir + "/"
     for key in ["dimsimplex", "dimspace", "degree", "n", "method", "opt_flag", "seed"]:
-        ymlfilename = ymlfilename + key + "." + str(settings[key]) + "_"
-    ymlfilename = ymlfilename + ".yml"
+        ymlfilename += key + "." + str(settings[key]) + "_"
+    ymlfilename += ".yml"
     wf = open(ymlfilename, "w")
     wf.write(yaml.dump(o, default_flow_style=False))
     wf.close()

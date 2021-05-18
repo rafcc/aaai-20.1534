@@ -503,7 +503,7 @@ class InductiveSkeletonTrainer:
                                 indices_fix=list(freeze_),
                                 result_dir=result_dir
                                 + "/subproblem_"
-                                + "_".join([str(i) for i in index]),
+                                + "_".join(str(i) for i in index),
                                 flag_write_meshgrid=flag_write_meshgrid,
                             )
                             C = self.insert_subproblem_control_point_to_whole_contol_point(
@@ -605,7 +605,7 @@ if __name__ == "__main__":
             subproblem_indices_list.append(c)
     data = {}
     for e in subproblem_indices_list:
-        string = "_".join([str(i) for i in e])
+        string = "_".join(str(i) for i in e)
         data[e] = np.loadtxt("../data/normalized_pf/normalized_5-MED.pf_" + string)
 
     print(data[(1,)])

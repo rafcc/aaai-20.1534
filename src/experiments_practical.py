@@ -25,7 +25,7 @@ def convert_params_to_string(
 
 def sampling_data_and_param(d, p, n, seed):
     random.seed(seed)
-    s = [i for i in range(d.shape[0])]
+    s = list(range(d.shape[0]))
     s_ = random.sample(s, n)
     return (d[s_, :], p[s_, :])
 
@@ -69,19 +69,19 @@ def experiments_practical_instances(
         "borges" does not care about this parameter.
     """
     # data preparation
-    objective_function_indices_list = [i for i in range(dimsimplex)]
+    objective_function_indices_list = list(range(dimsimplex))
     subproblem_indices_list = []
     for i in range(1, len(objective_function_indices_list) + 1):
         for c in combinations(objective_function_indices_list, i):
             subproblem_indices_list.append(c)
-    monomial_degree_list = [
-        i for i in subfunction.BezierIndex(dim=dimsimplex, deg=degree)
-    ]
+    monomial_degree_list = list(
+        subfunction.BezierIndex(dim=dimsimplex, deg=degree)
+    )
     data_all = {}
     param_all = {}
     for e in subproblem_indices_list:
         if len(e) <= degree or len(e) == dimsimplex:
-            string = "_".join([str(i + 1) for i in e])
+            string = "_".join(str(i + 1) for i in e)
             tmp = data.Dataset(
                 data_dir + "/" + trn_data + "," + solution_type + "_" + string
             )
@@ -95,7 +95,7 @@ def experiments_practical_instances(
     if method == "borges":
         param_trn = {}
         data_trn = {}
-        e = tuple([i for i in range(dimsimplex)])
+        e = tuple(range(dimsimplex))
         data_trn[e], param_trn[e] = sampling_data_and_param(
             d=data_all[e], p=param_all[e], n=n, seed=seed
         )
@@ -140,7 +140,7 @@ def experiments_practical_instances(
         pass
 
     # evaluate empirical l2 risk
-    e = tuple([i for i in range(dimsimplex)])
+    e = tuple(range(dimsimplex))
     data_tst = data.Dataset(
         data_dir
         + "/"
@@ -148,10 +148,10 @@ def experiments_practical_instances(
         + ","
         + solution_type
         + "_"
-        + "_".join([str(i + 1) for i in e])
+        + "_".join(str(i + 1) for i in e)
     ).values
     param_tst = data.Dataset(
-        data_dir + "/" + test_data + ",w_" + "_".join([str(i + 1) for i in e])
+        data_dir + "/" + test_data + ",w_" + "_".join(str(i + 1) for i in e)
     ).values
     bezier_simplex = model.BezierSimplex(
         dimSpace=dimspace, dimSimplex=dimsimplex, degree=degree

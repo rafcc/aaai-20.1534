@@ -8,7 +8,7 @@ import subfunction
 
 
 def c(ixs):
-    return sum(range(1, sum((i > 0 for i in ixs)) + 1))
+    return sum(range(1, sum(i > 0 for i in ixs) + 1))
 
 
 def multinomial(lst):
@@ -44,9 +44,9 @@ class GenerateControlPoint:
         self.dimSpace = dimSpace  # degree of bezier simplex
         self.dimSimplex = dimSimplex  # dimension of bezier simplex
         self.degree = degree  # dimension of constol point
-        self.monomial_degree_list = [
-            i for i in subfunction.BezierIndex(dim=self.dimSimplex, deg=self.degree)
-        ]
+        self.monomial_degree_list = list(
+            subfunction.BezierIndex(dim=self.dimSimplex, deg=self.degree)
+        )
 
     def simplex(self):
         control_point_true = {}
@@ -237,9 +237,9 @@ class BezierSimplex:
             # print(i)
             data_extreme_points[i + 1] = data[(i + 1,)]
         C = {}
-        list_base_function_index = [
-            i for i in subfunction.BezierIndex(dim=self.dimSimplex, deg=self.degree)
-        ]
+        list_base_function_index = list(
+            subfunction.BezierIndex(dim=self.dimSimplex, deg=self.degree)
+        )
         list_extreme_point_index = [
             i for i in list_base_function_index if count_nonzero(i) == 1
         ]

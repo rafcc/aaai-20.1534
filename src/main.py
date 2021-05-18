@@ -28,7 +28,7 @@ def main(ymlfilename, resultdir, borges_flag=1):
     SIMPLEX_TYPE = params["simplextype"]
 
     np.random.seed(SEED)
-    objective_function_indices_list = [i for i in range(DIMENSION_SIMPLEX)]
+    objective_function_indices_list = list(range(DIMENSION_SIMPLEX))
     subproblem_indices_list = []
     for i in range(1, len(objective_function_indices_list) + 1):
         for c in combinations(objective_function_indices_list, i):
@@ -40,9 +40,9 @@ def main(ymlfilename, resultdir, borges_flag=1):
     borges_pastva_trainer = trainer.BorgesPastvaTrainer(
         dimSpace=DIMENSION_SPACE, dimSimplex=DIMENSION_SIMPLEX, degree=DEGREE
     )
-    monomial_degree_list = [
-        i for i in subfunction.BezierIndex(dim=DIMENSION_SIMPLEX, deg=DEGREE)
-    ]
+    monomial_degree_list = list(
+        subfunction.BezierIndex(dim=DIMENSION_SIMPLEX, deg=DEGREE)
+    )
 
     # generate true control points
     generate_control_point = model.GenerateControlPoint(
@@ -50,7 +50,7 @@ def main(ymlfilename, resultdir, borges_flag=1):
     )
     if SIMPLEX_TYPE == "linear":
         control_point_true = generate_control_point.simplex()
-        SEED = SEED + 5
+        SEED += 5
     elif SIMPLEX_TYPE == "squareroot":
         control_point_true = generate_control_point.squareroot()
 
@@ -62,12 +62,12 @@ def main(ymlfilename, resultdir, borges_flag=1):
     for c in subproblem_indices_list:
         if len(c) <= min(DIMENSION_SIMPLEX, DEGREE):
             n = NUM_SAMPLE[len(c) - 1]
-            SEED = SEED + 30
+            SEED += 30
             z = uniform_sampling.subsimplex(indices=c, num_sample=n, seed=SEED)
             param_trn[c] = z
             b = bezier_simplex.generate_points(c=control_point_true, tt=param_trn[c])
             epsilon = np.random.multivariate_normal(
-                [0 for i in range(DIMENSION_SPACE)],
+                [0] * DIMENSION_SPACE,
                 np.identity(DIMENSION_SPACE) * (SIGMA ** 2),
                 n,
             )
@@ -86,11 +86,11 @@ def main(ymlfilename, resultdir, borges_flag=1):
             c=control_point_true, tt=param_trn_borges
         )
         epsilon = np.random.multivariate_normal(
-            [0 for i in range(DIMENSION_SPACE)],
+            [0] * DIMENSION_SPACE,
             np.identity(DIMENSION_SPACE) * (SIGMA ** 2),
             NUM_SAMPLE_ALL,
         )
-        data_trn_borges = data_trn_borges + epsilon
+        data_trn_borges += epsilon
     print(
         "geenrating data finihed, elapsed_time:{0}".format(time.time() - start)
         + "[sec]"
@@ -151,9 +151,9 @@ def main(ymlfilename, resultdir, borges_flag=1):
     start = time.time()
 
     if SIMPLEX_TYPE == "linear":
-        SEED = SEED + 1
+        SEED += 1
     else:
-        SEED = SEED + 5
+        SEED += 5
     param_tst_array = uniform_sampling.subsimplex(
         indices=objective_function_indices_list,
         num_sample=NUM_SAMPLE_TEST,

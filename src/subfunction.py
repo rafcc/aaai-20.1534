@@ -45,7 +45,7 @@ def concat_data_to_arrray(d):
             d_array = d[key]
         else:
             d_array = np.r_[d_array, d[key]]
-        index = index + 1
+        index += 1
     return d_array
 
 

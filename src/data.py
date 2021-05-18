@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
-from itertools import combinations
-from typing import Optional, Set
-
-import numpy as np  # type: ignore
 import pandas as pd  # type: ignore
-
-import model
+import numpy as np  # type: ignore
+from typing import Optional, Set
+from itertools import combinations
 import sampling
+import model
 import subfunction
 
 
@@ -314,7 +312,7 @@ class SyntheticData:
         self.degree = degree
         self.dimspace = dimspace
         self.dimsimplex = dimsimplex
-        self.objective_function_indices_list = [i for i in range(self.dimsimplex)]
+        self.objective_function_indices_list = list(range(self.dimsimplex))
 
         self.subproblem_indices_list = []
         for i in range(1, len(self.objective_function_indices_list) + 1):
@@ -326,9 +324,9 @@ class SyntheticData:
         self.bezier_simplex = model.BezierSimplex(
             dimSpace=self.dimspace, dimSimplex=self.dimsimplex, degree=self.degree
         )
-        self.monomial_degree_list = [
-            i for i in subfunction.BezierIndex(dim=self.dimsimplex, deg=self.degree)
-        ]
+        self.monomial_degree_list = list(
+            subfunction.BezierIndex(dim=self.dimsimplex, deg=self.degree)
+        )
         # generate true control points
         generate_control_point = model.GenerateControlPoint(
             dimSpace=self.dimspace, dimSimplex=self.dimsimplex, degree=self.degree
@@ -343,11 +341,11 @@ class SyntheticData:
         )
         data = self.bezier_simplex.generate_points(c=self.control_point_true, tt=param)
         epsilon = np.random.multivariate_normal(
-            [0 for i in range(self.dimspace)],
+            [0] * self.dimspace,
             np.identity(self.dimspace) * (sigma ** 2),
             n,
         )
-        data = data + epsilon
+        data += epsilon
         return (param, data)
 
     def sampling_inductive(self, n, sample_size_list, seed, sigma):
@@ -356,14 +354,14 @@ class SyntheticData:
         for c in self.subproblem_indices_list:
             if len(c) <= min(self.dimsimplex, self.degree):
                 n = sample_size_list[len(c) - 1]
-                seed = seed + 30
+                seed += 30
                 z = self.uniform_sampling.subsimplex(indices=c, num_sample=n, seed=seed)
                 param[c] = z
                 b = self.bezier_simplex.generate_points(
                     c=self.control_point_true, tt=param[c]
                 )
                 epsilon = np.random.multivariate_normal(
-                    [0 for i in range(self.dimspace)],
+                    [0] * self.dimspace,
                     np.identity(self.dimspace) * (sigma ** 2),
                     n,
                 )
@@ -372,10 +370,8 @@ class SyntheticData:
 
 
 if __name__ == "__main__":
-    from itertools import combinations
-
     eps = -0.1
     dimsimplex = 5
     d = Dataset("../data/raw/S3TD.pf")
-    indices_list = [i for i in range(dimsimplex)]
+    indices_list = list(range(dimsimplex))
     subproblem_indices_list = []
