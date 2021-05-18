@@ -1,13 +1,17 @@
 # -*- coding: utf-8 -*-
-import pandas as pd  # type: ignore
-import numpy as np  # type: ignore
-from typing import Optional, Set
 from itertools import combinations
-import sampling
+from typing import Optional, Set
+
+import numpy as np  # type: ignore
+import pandas as pd  # type: ignore
+
 import model
+import sampling
 import subfunction
+
+
 class Dataset:
-    '''Dataset.
+    """Dataset.
     >>> d = Dataset('test/ConstrEx.pf')
     >>> d
     array([[0.9991    , 1.00090081],
@@ -17,7 +21,8 @@ class Dataset:
            [0.9946    , 1.00542932],
            [0.9964    , 1.00361301],
            [0.9982    , 1.00180325]])
-    '''
+    """
+
     def __init__(self, filename: Optional[str] = None) -> None:
         if filename:
             self.read(filename)
@@ -31,7 +36,7 @@ class Dataset:
         return repr(self.values)
 
     def read(self, filename: str) -> None:
-        '''Read the dataset from a file.
+        """Read the dataset from a file.
 
         Examples
         ========
@@ -45,21 +50,21 @@ class Dataset:
                [0.9946    , 1.00542932],
                [0.9964    , 1.00361301],
                [0.9982    , 1.00180325]])
-        '''
+        """
         self.values = np.loadtxt(filename)
 
     def write(self, filename: str) -> None:
-        '''Write the dataset to a file.
+        """Write the dataset to a file.
 
         Examples
         ========
         >>> d = Dataset('test/ConstrEx.pf')
         >>> d.write('test/ConstrEx.pf')
-        '''
+        """
         np.savetxt(filename, self.values)
 
-    def unique(self) -> 'Dataset':
-        '''Drop duplicated lines.
+    def unique(self) -> "Dataset":
+        """Drop duplicated lines.
 
         Examples
         ========
@@ -74,11 +79,11 @@ class Dataset:
         >>> d.unique()
         array([[1, 2],
                [3, 4]])
-        '''
+        """
         return np.unique(self.values, axis=0)
 
-    def union(self, other: 'Dataset') -> 'Dataset':
-        '''Concat a given dataset after this dataset.
+    def union(self, other: "Dataset") -> "Dataset":
+        """Concat a given dataset after this dataset.
 
         Examples
         ========
@@ -100,11 +105,11 @@ class Dataset:
                [3, 4],
                [5, 6],
                [7, 8]])
-        '''
+        """
         return np.append(self.values, other.values, axis=0)
 
-    def difference(self, other: 'Dataset') -> 'Dataset':
-        '''Remove elements in a given dataset from this dataset.
+    def difference(self, other: "Dataset") -> "Dataset":
+        """Remove elements in a given dataset from this dataset.
 
         Examples
         ========
@@ -123,13 +128,21 @@ class Dataset:
         Drop the duplicated line
         >>> d1.difference(d2)
         array([[1, 2]])
-        '''
-        return pd.concat(
-            [pd.DataFrame(self.values), pd.DataFrame(other.values),pd.DataFrame(other.values)]
-            ).drop_duplicates(keep=False).values
+        """
+        return (
+            pd.concat(
+                [
+                    pd.DataFrame(self.values),
+                    pd.DataFrame(other.values),
+                    pd.DataFrame(other.values),
+                ]
+            )
+            .drop_duplicates(keep=False)
+            .values
+        )
 
-    def sample(self, n: int) -> 'Dataset':
-        '''Remove elements in a given dataset from this dataset.
+    def sample(self, n: int) -> "Dataset":
+        """Remove elements in a given dataset from this dataset.
 
         Examples
         ========
@@ -145,12 +158,12 @@ class Dataset:
         Sample
         >>> d.sample(1)
         array([[3, 4]])
-        '''
+        """
         return pd.DataFrame(self.values).sample(n).values
 
 
 def weak_pareto_filter(costs: Dataset, subproblem: Set[int]) -> Dataset:
-    '''
+    """
     Filter weakly Pareto-optimal points.
 
     Parameters
@@ -183,22 +196,22 @@ def weak_pareto_filter(costs: Dataset, subproblem: Set[int]) -> Dataset:
     The point with smallest F2 is [2, 1]
     >>> weak_pareto_filter(d, {1})
     array([[2, 1]])
-    '''
+    """
     indices = list(subproblem)
     subcosts = costs.values[:, indices]
     is_efficient = np.ones(subcosts.shape[0], dtype=bool)
     for i, c in enumerate(subcosts):
         if is_efficient[i]:
             is_efficient[is_efficient] = np.any(
-                subcosts[is_efficient] <= c,
-                axis=1)  # Remove dominated points
+                subcosts[is_efficient] <= c, axis=1
+            )  # Remove dominated points
     d = Dataset()
     d.values = costs.values[is_efficient]
     return d
 
 
-def pareto_filter(costs: Dataset, subproblem: Set[int], eps: float=0.) -> Dataset:
-    '''
+def pareto_filter(costs: Dataset, subproblem: Set[int], eps: float = 0.0) -> Dataset:
+    """
     Filter weakly Pareto-optimal points.
 
     Parameters
@@ -232,23 +245,26 @@ def pareto_filter(costs: Dataset, subproblem: Set[int], eps: float=0.) -> Datase
     The point with smallest F2 is [2, 1]
     >>> pareto_filter(d, {1})
     array([[2, 1]])
-    '''
+    """
     indices = list(subproblem)
     subcosts = costs.values[:, indices]
     is_efficient = np.ones(subcosts.shape[0], dtype=bool)
     for i, c in enumerate(subcosts):
         if is_efficient[i]:
             is_efficient[is_efficient] = np.any(
-                [np.all(subcosts[is_efficient] == c-eps, axis=1),
-                 np.any(subcosts[is_efficient] < c-eps, axis=1)],
-                axis=0)  # Remove dominated points
+                [
+                    np.all(subcosts[is_efficient] == c - eps, axis=1),
+                    np.any(subcosts[is_efficient] < c - eps, axis=1),
+                ],
+                axis=0,
+            )  # Remove dominated points
     d = Dataset()
     d.values = costs.values[is_efficient]
     return d
 
 
 class Normalizer:
-    '''Normalize each axis of data to the unit interval [0, 1].
+    """Normalize each axis of data to the unit interval [0, 1].
 
     Examples
     ========
@@ -272,76 +288,94 @@ class Normalizer:
     array([ True,  True])
     >>> raw2.values.max(axis=0) == raw.values.max(axis=0)
     array([ True,  True])
-    '''
+    """
+
     def __init__(self, raw: Dataset) -> None:
         self.mins = raw.values.min(axis=0)
         self.maxs = raw.values.max(axis=0)
 
     def normalize(self, raw: Dataset) -> Dataset:
-        '''Normalize data to the unit interval.
-        '''
+        """Normalize data to the unit interval.
+        """
         d = Dataset()
         d.values = (raw.values - self.mins) / (self.maxs - self.mins)
         return d
 
     def denormalize(self, normalized: Dataset) -> Dataset:
-        '''Denormalize data to the original range.
-        '''
+        """Denormalize data to the original range.
+        """
         d = Dataset()
         d.values = normalized.values * (self.maxs - self.mins) + self.mins
         return d
 
-class SyntheticData():
-    def __init__(self,degree,dimspace,dimsimplex):
+
+class SyntheticData:
+    def __init__(self, degree, dimspace, dimsimplex):
         self.degree = degree
         self.dimspace = dimspace
         self.dimsimplex = dimsimplex
         self.objective_function_indices_list = [i for i in range(self.dimsimplex)]
 
         self.subproblem_indices_list = []
-        for i in range(1,len(self.objective_function_indices_list)+1):
+        for i in range(1, len(self.objective_function_indices_list) + 1):
             for c in combinations(self.objective_function_indices_list, i):
                 self.subproblem_indices_list.append(c)
 
         # prepare class to generate data points on bezier simplex
         self.uniform_sampling = sampling.UniformSampling(dimension=self.dimsimplex)
-        self.bezier_simplex = model.BezierSimplex(dimSpace=self.dimspace,
-                                             dimSimplex=self.dimsimplex,
-                                             degree=self.degree)
-        self.monomial_degree_list = [i for i in subfunction.BezierIndex(dim=self.dimsimplex,deg=self.degree)]
+        self.bezier_simplex = model.BezierSimplex(
+            dimSpace=self.dimspace, dimSimplex=self.dimsimplex, degree=self.degree
+        )
+        self.monomial_degree_list = [
+            i for i in subfunction.BezierIndex(dim=self.dimsimplex, deg=self.degree)
+        ]
         # generate true control points
-        generate_control_point = model.GenerateControlPoint(dimSpace=self.dimspace,dimSimplex=self.dimsimplex,degree =self.degree)
+        generate_control_point = model.GenerateControlPoint(
+            dimSpace=self.dimspace, dimSimplex=self.dimsimplex, degree=self.degree
+        )
         self.control_point_true = generate_control_point.simplex()
-    def sampling_borges(self,n,seed,sigma):
-        param = self.uniform_sampling.subsimplex(num_sample=n,
-                                                 indices=self.objective_function_indices_list,
-                                                 seed=(seed+1)*len(self.objective_function_indices_list))
-        data = self.bezier_simplex.generate_points(c=self.control_point_true,
-                                                   tt=param)
-        epsilon = np.random.multivariate_normal([0 for i in range(self.dimspace)],
-                                                 np.identity(self.dimspace)*(sigma**2),n)
+
+    def sampling_borges(self, n, seed, sigma):
+        param = self.uniform_sampling.subsimplex(
+            num_sample=n,
+            indices=self.objective_function_indices_list,
+            seed=(seed + 1) * len(self.objective_function_indices_list),
+        )
+        data = self.bezier_simplex.generate_points(c=self.control_point_true, tt=param)
+        epsilon = np.random.multivariate_normal(
+            [0 for i in range(self.dimspace)],
+            np.identity(self.dimspace) * (sigma ** 2),
+            n,
+        )
         data = data + epsilon
-        return(param,data)
-    def sampling_inductive(self,n, sample_size_list,seed,sigma):
+        return (param, data)
+
+    def sampling_inductive(self, n, sample_size_list, seed, sigma):
         param = {}
         data = {}
         for c in self.subproblem_indices_list:
-            if len(c) <= min(self.dimsimplex,self.degree):
-                n = sample_size_list[len(c)-1]
+            if len(c) <= min(self.dimsimplex, self.degree):
+                n = sample_size_list[len(c) - 1]
                 seed = seed + 30
-                z = self.uniform_sampling.subsimplex(indices=c,num_sample=n,seed=seed)
+                z = self.uniform_sampling.subsimplex(indices=c, num_sample=n, seed=seed)
                 param[c] = z
-                b = self.bezier_simplex.generate_points(c=self.control_point_true,
-                                                   tt=param[c])
-                epsilon = np.random.multivariate_normal([0 for i in range(self.dimspace)],
-                                                        np.identity(self.dimspace)*(sigma**2),n)
+                b = self.bezier_simplex.generate_points(
+                    c=self.control_point_true, tt=param[c]
+                )
+                epsilon = np.random.multivariate_normal(
+                    [0 for i in range(self.dimspace)],
+                    np.identity(self.dimspace) * (sigma ** 2),
+                    n,
+                )
                 data[c] = b + epsilon
-        return(param,data)
+        return (param, data)
 
-if __name__=='__main__':
+
+if __name__ == "__main__":
     from itertools import combinations
+
     eps = -0.1
     dimsimplex = 5
-    d = Dataset('../data/raw/S3TD.pf')
+    d = Dataset("../data/raw/S3TD.pf")
     indices_list = [i for i in range(dimsimplex)]
     subproblem_indices_list = []
