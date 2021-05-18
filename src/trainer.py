@@ -68,17 +68,17 @@ def calc_gd_igd(dd1, dd2):
 
 
 class BorgesPastvaTrainer:
-    def __init__(self, dimSpace, degree, dimSimplex):
-        self.dimSpace = dimSpace  # degree of bezier simplex
-        self.dimSimplex = dimSimplex  # dimension of bezier simplex
-        self.degree = degree  # dimension of constol point
+    def __init__(self, dim_space, degree, dim_simplex):
+        self.dim_space = dim_space
+        self.dim_simplex = dim_simplex
+        self.degree = degree
         self.bezier_simplex = model.BezierSimplex(
-            dimSpace=self.dimSpace, dimSimplex=self.dimSimplex, degree=self.degree
+            dim_space=self.dim_space, dim_simplex=self.dim_simplex, degree=self.degree
         )
 
     def initialize_control_point(self, data):
         bezier_simplex = model.BezierSimplex(
-            dimSpace=self.dimSpace, dimSimplex=self.dimSimplex, degree=self.degree
+            dim_space=self.dim_space, dim_simplex=self.dim_simplex, degree=self.degree
         )
         C = bezier_simplex.initialize_control_point(data)
         return C
@@ -93,15 +93,15 @@ class BorgesPastvaTrainer:
         """
         g = {}
         x = {}
-        for d in range(self.dimSimplex - 1):
-            x[d] = np.zeros(self.dimSpace)
-        for d in range(self.dimSimplex - 1):
+        for d in range(self.dim_simplex - 1):
+            x[d] = np.zeros(self.dim_space)
+        for d in range(self.dim_simplex - 1):
             for key in self.bezier_simplex.Mf_all.keys():
-                for i in range(self.dimSpace):
+                for i in range(self.dim_space):
                     x[d][i] += (
                         self.bezier_simplex.monomial_diff(
                             multi_index=key, d0=d, d1=None
-                        )(*t[0 : self.dimSimplex - 1])
+                        )(*t[0 : self.dim_simplex - 1])
                         * c[key][i]
                     )
         for d in x:
@@ -118,18 +118,18 @@ class BorgesPastvaTrainer:
         """
         h = {}
         x = {}
-        for d1 in range(self.dimSimplex - 1):
-            for d2 in range(self.dimSimplex - 1):
-                x[(d1, d2)] = np.zeros(self.dimSpace)
+        for d1 in range(self.dim_simplex - 1):
+            for d2 in range(self.dim_simplex - 1):
+                x[(d1, d2)] = np.zeros(self.dim_space)
 
-        for d1 in range(self.dimSimplex - 1):
-            for d2 in range(self.dimSimplex - 1):
+        for d1 in range(self.dim_simplex - 1):
+            for d2 in range(self.dim_simplex - 1):
                 for key in self.bezier_simplex.Mf_all.keys():
-                    for i in range(self.dimSpace):
+                    for i in range(self.dim_space):
                         x[(d1, d2)][i] += (
                             self.bezier_simplex.monomial_diff(
                                 multi_index=key, d0=d1, d1=d2
-                            )(*t[0 : self.dimSimplex - 1])
+                            )(*t[0 : self.dim_simplex - 1])
                             * c[key][i]
                         )
         for (d1, d2) in x:
@@ -147,8 +147,8 @@ class BorgesPastvaTrainer:
         """
         ttt = {}
         tt, xx = self.bezier_simplex.meshgrid(c)
-        tt_ = np.empty([data.shape[0], self.dimSimplex])
-        xx_ = np.empty([data.shape[0], self.dimSpace])
+        tt_ = np.empty([data.shape[0], self.dim_simplex])
+        xx_ = np.empty([data.shape[0], self.dim_space])
         for i in range(data.shape[0]):
             a = data[i, :]
             tmp = xx - a
@@ -161,21 +161,21 @@ class BorgesPastvaTrainer:
     def inner_product(self, c, t, x):
         g = self.gradient(c, t)
         b = self.bezier_simplex.sampling(c, t)
-        f = np.array(np.zeros(self.dimSimplex - 1))
-        for d in range(self.dimSimplex - 1):
-            f[d] = sum(g[(d,)][i] * (b[i] - x[i]) for i in range(self.dimSpace))
+        f = np.array(np.zeros(self.dim_simplex - 1))
+        for d in range(self.dim_simplex - 1):
+            f[d] = sum(g[(d,)][i] * (b[i] - x[i]) for i in range(self.dim_space))
         return f
 
     def inner_product_jaccobian(self, c, t, x):
         g = self.gradient(c, t)
         b = self.bezier_simplex.sampling(c, t)
         h = self.hessian(c, t)
-        j = np.zeros([self.dimSimplex - 1, self.dimSimplex - 1])
-        for d1 in range(self.dimSimplex - 1):
-            for d2 in range(self.dimSimplex - 1):
+        j = np.zeros([self.dim_simplex - 1, self.dim_simplex - 1])
+        for d1 in range(self.dim_simplex - 1):
+            for d2 in range(self.dim_simplex - 1):
                 j[d1, d2] = sum(
                     h[(d1, d2)][i] * (b[i] - x[i]) + g[(d1,)][i] * g[(d2,)][i]
-                    for i in range(self.dimSpace)
+                    for i in range(self.dim_space)
                 )
         return j
 
@@ -201,18 +201,18 @@ class BorgesPastvaTrainer:
                 return np.linalg.norm(x - tmp)
 
             cons = []
-            for i in range(self.dimSimplex):
+            for i in range(self.dim_simplex):
                 cons = cons + [{"type": "ineq", "fun": lambda x: x[i]}]
             cons = cons + [{"type": "eq", "fun": lambda x: -np.sum(x) + 1}]
             res = minimize(l2norm, x0=tmp, constraints=cons)
-            return res.x[0 : self.dimSimplex - 1]
+            return res.x[0 : self.dim_simplex - 1]
 
     def update_parameter(self, c, t_mat, data):
-        tt_ = np.empty([data.shape[0], self.dimSimplex - 1])
-        xx_ = np.empty([data.shape[0], self.dimSpace])
+        tt_ = np.empty([data.shape[0], self.dim_simplex - 1])
+        xx_ = np.empty([data.shape[0], self.dim_space])
         for i in range(data.shape[0]):
             x = data[i]
-            t = t_mat[i][0 : self.dimSimplex - 1]
+            t = t_mat[i][0 : self.dim_simplex - 1]
             t_hat = self.newton_method(c, t, x)
             t_hat2 = self.projection_onto_simplex(t_hat)
             x_hat = self.bezier_simplex.sampling(c, t_hat2)
@@ -230,14 +230,14 @@ class BorgesPastvaTrainer:
                 if key not in indices_fix:
                     mat_r[i, jj] = self.bezier_simplex.monomial_diff(
                         multi_index=key, d0=None, d1=None
-                    )(*t_mat[i, 0 : self.dimSimplex - 1])
+                    )(*t_mat[i, 0 : self.dim_simplex - 1])
                     jj += 1
                 if key in indices_fix:
                     mat_l[i, :] = (
                         mat_l[i]
                         - self.bezier_simplex.monomial_diff(
                             multi_index=key, d0=None, d1=None
-                        )(*t_mat[i, 0 : self.dimSimplex - 1])
+                        )(*t_mat[i, 0 : self.dim_simplex - 1])
                         * c[key]
                     )
         return (mat_l, mat_r)
@@ -246,7 +246,7 @@ class BorgesPastvaTrainer:
         """indices_fix: fixed control point"""
         dic_c = {}
         for key in indices_all:
-            dic_c[key] = np.empty(self.dimSpace)
+            dic_c[key] = np.empty(self.dim_space)
         mat_l, mat_r = self.normal_equation(t_mat, data, c, indices_all, indices_fix)
         for i in range(data.shape[1]):
             y = mat_l[:, i]
@@ -287,7 +287,7 @@ class BorgesPastvaTrainer:
             index = 0
             for key in data:
                 if len(key) == 1:
-                    data[key] = data[key].reshape((1, self.dimSpace))
+                    data[key] = data[key].reshape((1, self.dim_space))
                 if index == 0:
                     data_array = data[key]
                 else:
@@ -381,17 +381,17 @@ class BorgesPastvaTrainer:
 
 
 class InductiveSkeletonTrainer:
-    def __init__(self, dimSpace, degree, dimSimplex):
-        self.dimSpace = dimSpace
-        self.dimSimplex = dimSimplex
+    def __init__(self, dim_space, degree, dim_simplex):
+        self.dim_space = dim_space
+        self.dim_simplex = dim_simplex
         self.degree = degree
         self.bezier_simplex = model.BezierSimplex(
-            dimSpace=self.dimSpace, dimSimplex=self.dimSimplex, degree=self.degree
+            dim_space=self.dim_space, dim_simplex=self.dim_simplex, degree=self.degree
         )
 
     def initialize_control_point(self, data):
         bezier_simplex = model.BezierSimplex(
-            dimSpace=self.dimSpace, dimSimplex=self.dimSimplex, degree=self.degree
+            dim_space=self.dim_space, dim_simplex=self.dim_simplex, degree=self.degree
         )
         C = bezier_simplex.initialize_control_point(data)
         return C
@@ -432,7 +432,7 @@ class InductiveSkeletonTrainer:
         self, C_whole, C_sub, index_list
     ):
         for key in C_sub:
-            key_ = [0 for i in range(self.dimSimplex)]
+            key_ = [0] * self.dim_simplex
             # print(key)
             for k in range(len(key)):
                 key_[index_list[k] - 1] = key[k]
@@ -457,7 +457,7 @@ class InductiveSkeletonTrainer:
         freeze_multiple_index_set = set()
         loop = 0
         start = time.time()
-        for dim in range(1, self.dimSpace + 1):
+        for dim in range(1, self.dim_space + 1):
             for index in data:
                 if len(index) == dim:
                     self.write_control_point(
@@ -484,8 +484,8 @@ class InductiveSkeletonTrainer:
                         )
                         if dim >= 2:
                             subproblem_borges_pastva_trainer = BorgesPastvaTrainer(
-                                dimSpace=self.dimSpace,
-                                dimSimplex=dim,
+                                dim_space=self.dim_space,
+                                dim_simplex=dim,
                                 degree=self.degree,
                             )
                             C_sub = self.extract_subproblem_control_point_from_whole_control_point(
@@ -547,11 +547,11 @@ class InductiveSkeletonTrainer:
 
     def update_control_point(self, t_dict, data_dict, c, indices_all, indices_fix):
         borges_pastva_trainer = BorgesPastvaTrainer(
-            dimSpace=self.dimSpace, dimSimplex=self.dimSimplex, degree=self.degree
+            dim_space=self.dim_space, dim_simplex=self.dim_simplex, degree=self.degree
         )
         freeze_multiple_degree_set = set()
         control_point = {}
-        for dim in range(1, self.dimSimplex + 1):
+        for dim in range(1, self.dim_simplex + 1):
             for index in data_dict:
                 if len(index) == dim:
                     target_multiple_degree_set = subfunction.extract_multiple_degree(
@@ -613,8 +613,8 @@ if __name__ == "__main__":
     print(data[(3,)])
 
     """
-    inductive_skelton_trainer = InuductiveSkeltonTrainer(dimSpace=DIM_SPACE,
-                                                        dimSimplex=DIM_SIMPLEX,
+    inductive_skelton_trainer = InuductiveSkeltonTrainer(dim_space=DIM_SPACE,
+                                                        dim_simplex=DIM_SIMPLEX,
                                                         degree=DEGREE)
     C_init = inductive_skelton_trainer.initialize_control_point(data)
     print(C_init)
@@ -627,7 +627,7 @@ if __name__ == "__main__":
     """
 
     borges_pastva_trainer = BorgesPastvaTrainer(
-        dimSpace=DIM_SPACE, dimSimplex=DIM_SIMPLEX, degree=DEGREE
+        dim_space=DIM_SPACE, dim_simplex=DIM_SIMPLEX, degree=DEGREE
     )
     C_init = borges_pastva_trainer.bezier_simplex.initialize_control_point(data)
 

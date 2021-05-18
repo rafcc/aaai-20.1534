@@ -29,23 +29,23 @@ def nonzero_indices(a):
     return np.nonzero(a)[0]
 
 
-def construct_simplex_meshgrid(ng, dimSimplex):
+def construct_simplex_meshgrid(ng, dim_simplex):
     t_list = np.linspace(0, 1, ng)
-    tmp = np.array(np.meshgrid(*[t_list for i in range(dimSimplex - 1)]))
-    m = np.zeros([tmp[0].ravel().shape[0], dimSimplex])
-    for i in range(dimSimplex - 1):
+    tmp = np.array(np.meshgrid(*[t_list for i in range(dim_simplex - 1)]))
+    m = np.zeros([tmp[0].ravel().shape[0], dim_simplex])
+    for i in range(dim_simplex - 1):
         m[:, i] = tmp[i].ravel()
-    m[:, dimSimplex - 1] = 1 - np.sum(m, axis=1)
+    m[:, dim_simplex - 1] = 1 - np.sum(m, axis=1)
     return m[m[:, -1] >= 0, :]
 
 
 class GenerateControlPoint:
-    def __init__(self, dimSpace, dimSimplex, degree):
-        self.dimSpace = dimSpace  # degree of bezier simplex
-        self.dimSimplex = dimSimplex  # dimension of bezier simplex
-        self.degree = degree  # dimension of constol point
+    def __init__(self, dim_space, dim_simplex, degree):
+        self.dim_space = dim_space
+        self.dim_simplex = dim_simplex
+        self.degree = degree
         self.monomial_degree_list = list(
-            subfunction.BezierIndex(dim=self.dimSimplex, deg=self.degree)
+            subfunction.BezierIndex(dim=self.dim_simplex, deg=self.degree)
         )
 
     def simplex(self):
@@ -53,11 +53,11 @@ class GenerateControlPoint:
         for deg in self.monomial_degree_list:
             if count_nonzero(deg) == 1:
                 index = int(nonzero_indices(deg)[0])
-                control_point_true[deg] = np.zeros([self.dimSpace])
+                control_point_true[deg] = np.zeros([self.dim_space])
                 control_point_true[deg][index] = 1
         for deg1 in self.monomial_degree_list:
             if deg1 not in control_point_true:
-                control_point_true[deg1] = np.zeros([self.dimSpace])
+                control_point_true[deg1] = np.zeros([self.dim_space])
                 for deg2 in self.monomial_degree_list:
                     if count_nonzero(deg2) == 1:
                         # print(deg1,deg2)
@@ -73,11 +73,11 @@ class GenerateControlPoint:
         for deg in self.monomial_degree_list:
             if count_nonzero(deg) == 1:
                 index = int(nonzero_indices(deg)[0])
-                control_point_true[deg] = np.zeros([self.dimSpace])
+                control_point_true[deg] = np.zeros([self.dim_space])
                 control_point_true[deg][index] = 1
         for deg1 in self.monomial_degree_list:
             if deg1 not in control_point_true:
-                control_point_true[deg1] = np.zeros([self.dimSpace])
+                control_point_true[deg1] = np.zeros([self.dim_space])
                 for deg2 in self.monomial_degree_list:
                     if count_nonzero(deg2) == 1:
                         # print(deg1,deg2)
@@ -92,14 +92,14 @@ class GenerateControlPoint:
 
 
 class BezierSimplex:
-    def __init__(self, dimSpace, dimSimplex, degree):
-        self.dimSpace = dimSpace  # degree of bezier simplex
-        self.dimSimplex = dimSimplex  # dimension of bezier simplex
-        self.degree = degree  # dimension of constol point
-        self.define_monomial(dimSpace=dimSpace, dimSimplex=dimSimplex, degree=degree)
+    def __init__(self, dim_space, dim_simplex, degree):
+        self.dim_space = dim_space
+        self.dim_simplex = dim_simplex
+        self.degree = degree
+        self.define_monomial(dim_space=dim_space, dim_simplex=dim_simplex, degree=degree)
 
-    def define_monomial(self, dimSpace, dimSimplex, degree):
-        T = [sympy.Symbol("t" + str(i)) for i in range(self.dimSimplex - 1)]
+    def define_monomial(self, dim_space, dim_simplex, degree):
+        T = [sympy.Symbol("t" + str(i)) for i in range(self.dim_simplex - 1)]
 
         def poly(i, n):
             eq = multinomial(i)
@@ -109,15 +109,15 @@ class BezierSimplex:
 
         """M[multi_index]"""
         M = {
-            i: poly(i, self.dimSimplex - 1)
-            for i in subfunction.BezierIndex(dim=self.dimSimplex, deg=self.degree)
+            i: poly(i, self.dim_simplex - 1)
+            for i in subfunction.BezierIndex(dim=self.dim_simplex, deg=self.degree)
         }
         # for i in M:
         #    print(i,M[i])
         """Mf[multi_index]"""
         Mf = {}
-        for i in subfunction.BezierIndex(dim=self.dimSimplex, deg=self.degree):
-            f = poly(i, self.dimSimplex - 1)
+        for i in subfunction.BezierIndex(dim=self.dim_simplex, deg=self.degree):
+            f = poly(i, self.dim_simplex - 1)
             b = compile(
                 "Mf[i] = lambda t0, t1=None, t2=None, t3=None, t4=None, t5=None, t6=None, t7=None: "
                 + str(f),
@@ -148,14 +148,14 @@ class BezierSimplex:
                 {k: sympy.diff(M_DIFF[j][k], t) for k, v in M.items()}
                 for h, t in enumerate(T)
             ]
-            for j in range(self.dimSimplex - 1)
+            for j in range(self.dim_simplex - 1)
         ]
         Mf_DIFF2 = {}
         for k, v in M.items():
             Mf_DIFF2[k] = []
             for h, t in enumerate(T):
                 Mf_DIFF2[k].append([])
-                for j in range(self.dimSimplex - 1):
+                for j in range(self.dim_simplex - 1):
                     Mf_DIFF2[k][-1].append([])
                     f = sympy.diff(M_DIFF[j][k], t)
                     b = compile(
@@ -191,12 +191,12 @@ class BezierSimplex:
         return:
             x
         """
-        x = np.zeros(self.dimSpace)
-        for key in subfunction.BezierIndex(dim=self.dimSimplex, deg=self.degree):
-            for i in range(self.dimSpace):
+        x = np.zeros(self.dim_space)
+        for key in subfunction.BezierIndex(dim=self.dim_simplex, deg=self.degree):
+            for i in range(self.dim_space):
                 x[i] += (
                     self.monomial_diff(key, d0=None, d1=None)(
-                        *t[0 : self.dimSimplex - 1]
+                        *t[0 : self.dim_simplex - 1]
                     )
                     * c[key][i]
                 )
@@ -207,25 +207,25 @@ class BezierSimplex:
             t = tt[i, :]
             if i == 0:
                 x = self.sampling(c, t)
-                xx = np.zeros([1, self.dimSpace])
+                xx = np.zeros([1, self.dim_space])
                 xx[i, :] = x
             else:
                 x = self.sampling(c, t)
-                x = x.reshape(1, self.dimSpace)
+                x = x.reshape(1, self.dim_space)
                 xx = np.concatenate((xx, x), axis=0)
         return xx
 
     def meshgrid(self, c):
-        tt = construct_simplex_meshgrid(21, self.dimSimplex)
+        tt = construct_simplex_meshgrid(21, self.dim_simplex)
         for i in range(tt.shape[0]):
             t = tt[i, :]
             if i == 0:
                 x = self.sampling(c, t)
-                xx = np.zeros([1, self.dimSpace])
+                xx = np.zeros([1, self.dim_space])
                 xx[i, :] = x
             else:
                 x = self.sampling(c, t)
-                x = x.reshape(1, self.dimSpace)
+                x = x.reshape(1, self.dim_space)
                 xx = np.concatenate((xx, x), axis=0)
         return (tt, xx)
 
@@ -233,12 +233,12 @@ class BezierSimplex:
         """initialize control point"""
         data_extreme_points = {}
         print(data.keys())
-        for i in range(self.dimSimplex):
+        for i in range(self.dim_simplex):
             # print(i)
             data_extreme_points[i + 1] = data[(i + 1,)]
         C = {}
         list_base_function_index = list(
-            subfunction.BezierIndex(dim=self.dimSimplex, deg=self.degree)
+            subfunction.BezierIndex(dim=self.dim_simplex, deg=self.degree)
         )
         list_extreme_point_index = [
             i for i in list_base_function_index if count_nonzero(i) == 1
@@ -248,7 +248,7 @@ class BezierSimplex:
             C[key] = data_extreme_points[index + 1]
         for key in list_base_function_index:
             if key not in C:
-                C[key] = np.zeros(self.dimSpace)
+                C[key] = np.zeros(self.dim_space)
                 for key_extreme_points in list_extreme_point_index:
                     index = int(nonzero_indices(key_extreme_points)[0])
                     C[key] = C[key] + C[key_extreme_points] * (key[index] / self.degree)
@@ -307,7 +307,7 @@ if __name__ == "__main__":
             )
 
     bezier_simplex = model.BezierSimplex(
-        dimSpace=DIM_SPACE, dimSimplex=DIM_SIMPLEX, degree=DEGREE
+        dim_space=DIM_SPACE, dim_simplex=DIM_SIMPLEX, degree=DEGREE
     )
     C_init = bezier_simplex.initialize_control_point(data)
     for key in C_init:

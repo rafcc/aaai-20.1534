@@ -50,8 +50,8 @@ class GridSampling:
 
 
 class CalcSampleSize:
-    def __init__(self, dimsimplex, degree):
-        self.dimsimplex = dimsimplex
+    def __init__(self, dim_simplex, degree):
+        self.dim_simplex = dim_simplex
         self.degree = degree
 
     def calc_sampling_ratio(self, opt_flag):
@@ -95,7 +95,7 @@ class CalcSampleSize:
                 8: [1 - 0.333 - 0.333, 0.333, 0.333],
             },
         }
-        return dict_sampling_ratio[opt_flag][self.degree][self.dimsimplex]
+        return dict_sampling_ratio[opt_flag][self.degree][self.dim_simplex]
 
     def get_sample_size_list(self, n, opt_flag):
         """
@@ -117,7 +117,7 @@ class CalcSampleSize:
         round = lambda x: (x * 2 + 1) // 2
         s_list = []
         ratio = self.calc_sampling_ratio(opt_flag=opt_flag)
-        for d in range(min(self.dimsimplex, self.degree)):
-            num_skeleton = comb(self.dimsimplex, d + 1, exact=True)
+        for d in range(min(self.dim_simplex, self.degree)):
+            num_skeleton = comb(self.dim_simplex, d + 1, exact=True)
             s_list.append(int(round(n * ratio[d] / num_skeleton)))
         return s_list

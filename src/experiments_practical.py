@@ -36,7 +36,7 @@ def experiments_practical_instances(
     test_data,
     n,
     solution_type,
-    dimsimplex,
+    dim_simplex,
     degree,
     method,
     seed,
@@ -56,7 +56,7 @@ def experiments_practical_instances(
         dataname for test
     n : int
         number of samples to be trained
-    dimsimplex : int
+    dim_simplex : int
         dimension of bezier simplex
     degree : int
         max degree of bezier simplex fittng
@@ -69,18 +69,18 @@ def experiments_practical_instances(
         "borges" does not care about this parameter.
     """
     # data preparation
-    objective_function_indices_list = list(range(dimsimplex))
+    objective_function_indices_list = list(range(dim_simplex))
     subproblem_indices_list = []
     for i in range(1, len(objective_function_indices_list) + 1):
         for c in combinations(objective_function_indices_list, i):
             subproblem_indices_list.append(c)
     monomial_degree_list = list(
-        subfunction.BezierIndex(dim=dimsimplex, deg=degree)
+        subfunction.BezierIndex(dim=dim_simplex, deg=degree)
     )
     data_all = {}
     param_all = {}
     for e in subproblem_indices_list:
-        if len(e) <= degree or len(e) == dimsimplex:
+        if len(e) <= degree or len(e) == dim_simplex:
             string = "_".join(str(i + 1) for i in e)
             tmp = data.Dataset(
                 data_dir + "/" + trn_data + "," + solution_type + "_" + string
@@ -90,17 +90,17 @@ def experiments_practical_instances(
             tmp = data.Dataset(data_dir + "/" + trn_data + ",w_" + string)
             param_all[e] = tmp.values
 
-    dimspace = data_all[(0, 1, 2,)].shape[1]
+    dim_space = data_all[(0, 1, 2,)].shape[1]
     # train
     if method == "borges":
         param_trn = {}
         data_trn = {}
-        e = tuple(range(dimsimplex))
+        e = tuple(range(dim_simplex))
         data_trn[e], param_trn[e] = sampling_data_and_param(
             d=data_all[e], p=param_all[e], n=n, seed=seed
         )
         borges_pastva_trainer = trainer.BorgesPastvaTrainer(
-            dimSpace=dimspace, dimSimplex=dimsimplex, degree=degree
+            dim_space=dim_space, dim_simplex=dim_simplex, degree=degree
         )
         control_point = borges_pastva_trainer.update_control_point(
             t_mat=param_trn[e],
@@ -111,7 +111,7 @@ def experiments_practical_instances(
         )
     elif method == "inductive":
         # calculate sample size of each skeleton
-        calc_sample_size = sampling.CalcSampleSize(degree=degree, dimsimplex=dimsimplex)
+        calc_sample_size = sampling.CalcSampleSize(degree=degree, dim_simplex=dim_simplex)
         train_sample_size_list = calc_sample_size.get_sample_size_list(
             n=n, opt_flag=opt_flag
         )
@@ -127,7 +127,7 @@ def experiments_practical_instances(
                     seed=seed + sum(e),
                 )
         inductive_skeleton_trainer = trainer.InductiveSkeletonTrainer(
-            dimSpace=dimspace, dimSimplex=dimsimplex, degree=degree
+            dim_space=dim_space, dim_simplex=dim_simplex, degree=degree
         )
         control_point = inductive_skeleton_trainer.update_control_point(
             t_dict=param_trn,
@@ -140,7 +140,7 @@ def experiments_practical_instances(
         pass
 
     # evaluate empirical l2 risk
-    e = tuple(range(dimsimplex))
+    e = tuple(range(dim_simplex))
     data_tst = data.Dataset(
         data_dir
         + "/"
@@ -154,7 +154,7 @@ def experiments_practical_instances(
         data_dir + "/" + test_data + ",w_" + "_".join(str(i + 1) for i in e)
     ).values
     bezier_simplex = model.BezierSimplex(
-        dimSpace=dimspace, dimSimplex=dimsimplex, degree=degree
+        dim_space=dim_space, dim_simplex=dim_simplex, degree=degree
     )
     data_pred = bezier_simplex.generate_points(c=control_point, tt=param_tst)
     l2_risk = subfunction.calculate_l2_expected_error(true=data_tst, pred=data_pred)
@@ -165,8 +165,8 @@ def experiments_practical_instances(
     settings["solution_type"] = solution_type
     settings["n"] = n
     settings["degree"] = degree
-    settings["dimspace"] = dimspace
-    settings["dimsimplex"] = dimsimplex
+    settings["dim_space"] = dim_space
+    settings["dim_simplex"] = dim_simplex
     settings["method"] = method
     settings["seed"] = seed
     settings["opt_flag"] = opt_flag
@@ -210,7 +210,7 @@ if __name__ == "__main__":
                         solution_type=solution_type,
                         n=n,
                         degree=degree,
-                        dimsimplex=3,
+                        dim_simplex=3,
                         seed=seed,
                         method="inductive",
                         opt_flag=1,
@@ -223,7 +223,7 @@ if __name__ == "__main__":
                         solution_type=solution_type,
                         n=n,
                         degree=degree,
-                        dimsimplex=3,
+                        dim_simplex=3,
                         seed=seed,
                         method="borges",
                         opt_flag=1,
@@ -248,7 +248,7 @@ if __name__ == "__main__":
                         solution_type=solution_type,
                         n=n,
                         degree=degree,
-                        dimsimplex=3,
+                        dim_simplex=3,
                         seed=seed,
                         method="inductive",
                         opt_flag=1,
@@ -261,7 +261,7 @@ if __name__ == "__main__":
                         solution_type=solution_type,
                         n=n,
                         degree=degree,
-                        dimsimplex=3,
+                        dim_simplex=3,
                         seed=seed,
                         method="inductive",
                         opt_flag=1,

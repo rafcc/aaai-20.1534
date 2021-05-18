@@ -22,7 +22,7 @@ def convert_params_to_string(
 
 
 def experiments_synthetic_data(
-    n, degree, dimspace, dimsimplex, sigma, method, seed, results_dir, opt_flag=1
+    n, degree, dim_space, dim_simplex, sigma, method, seed, results_dir, opt_flag=1
 ):
     """
     conduct experiments with synthetic data
@@ -33,10 +33,10 @@ def experiments_synthetic_data(
         number of sample points to be trained
     degree : int
         max degree of bezier simplex fittng
-    dimspace : int
+    dim_space : int
         the number of dimension of the Eucledian space
         where the bezier simplex is embedded
-    dimsimplex : int
+    dim_simplex : int
         the number of dimension of bezier simplex
     sigma : float
         the scale of noise.
@@ -51,7 +51,7 @@ def experiments_synthetic_data(
     """
     # data generation class
     synthetic_data = data.SyntheticData(
-        degree=degree, dimspace=dimspace, dimsimplex=dimsimplex
+        degree=degree, dim_space=dim_space, dim_simplex=dim_simplex
     )
 
     # train
@@ -60,10 +60,10 @@ def experiments_synthetic_data(
             n=n, seed=seed, sigma=sigma
         )
         monomial_degree_list = list(
-            subfunction.BezierIndex(dim=dimsimplex, deg=degree)
+            subfunction.BezierIndex(dim=dim_simplex, deg=degree)
         )
         borges_pastva_trainer = trainer.BorgesPastvaTrainer(
-            dimSpace=dimspace, dimSimplex=dimsimplex, degree=degree
+            dim_space=dim_space, dim_simplex=dim_simplex, degree=degree
         )
         control_point = borges_pastva_trainer.update_control_point(
             t_mat=param_trn,
@@ -74,7 +74,7 @@ def experiments_synthetic_data(
         )
     elif method == "inductive":
         # calculate sample size of each skeleton
-        calc_sample_size = sampling.CalcSampleSize(degree=degree, dimsimplex=dimsimplex)
+        calc_sample_size = sampling.CalcSampleSize(degree=degree, dim_simplex=dim_simplex)
         train_sample_size_list = calc_sample_size.get_sample_size_list(
             n=n, opt_flag=opt_flag
         )
@@ -83,10 +83,10 @@ def experiments_synthetic_data(
             n=n, seed=seed, sample_size_list=train_sample_size_list, sigma=sigma
         )
         monomial_degree_list = list(
-            subfunction.BezierIndex(dim=dimsimplex, deg=degree)
+            subfunction.BezierIndex(dim=dim_simplex, deg=degree)
         )
         inductive_skeleton_trainer = trainer.InductiveSkeletonTrainer(
-            dimSpace=dimspace, dimSimplex=dimsimplex, degree=degree
+            dim_space=dim_space, dim_simplex=dim_simplex, degree=degree
         )
         control_point = inductive_skeleton_trainer.update_control_point(
             t_dict=param_trn,
@@ -103,7 +103,7 @@ def experiments_synthetic_data(
         n=10000, seed=seed * 2, sigma=0
     )
     bezier_simplex = model.BezierSimplex(
-        dimSpace=dimspace, dimSimplex=dimsimplex, degree=degree
+        dim_space=dim_space, dim_simplex=dim_simplex, degree=degree
     )
     data_pred = bezier_simplex.generate_points(c=control_point, tt=param_tst)
     l2_risk = subfunction.calculate_l2_expected_error(true=data_tst, pred=data_pred)
@@ -112,8 +112,8 @@ def experiments_synthetic_data(
     settings = {}
     settings["n"] = n
     settings["degree"] = degree
-    settings["dimspace"] = dimspace
-    settings["dimsimplex"] = dimsimplex
+    settings["dim_space"] = dim_space
+    settings["dim_simplex"] = dim_simplex
     settings["sigma"] = sigma
     settings["method"] = method
     settings["seed"] = seed
@@ -126,7 +126,7 @@ def experiments_synthetic_data(
     o["settings"] = settings
 
     ymlfilename = results_dir + "/"
-    for key in ["dimsimplex", "dimspace", "degree", "n", "method", "opt_flag", "seed"]:
+    for key in ["dim_simplex", "dim_space", "degree", "n", "method", "opt_flag", "seed"]:
         ymlfilename += key + "." + str(settings[key]) + "_"
     ymlfilename += ".yml"
     wf = open(ymlfilename, "w")
@@ -137,7 +137,7 @@ def experiments_synthetic_data(
 if __name__ == "__main__":
     degree_list = [2, 3]
     setting_tuple_list = [
-        (250, 100, 8),  # n, dimspace, dimsimplex,
+        (250, 100, 8),  # n, dim_space, dim_simplex,
         (500, 100, 8),
         (1000, 100, 8),
         (2000, 100, 8),  ##
@@ -149,22 +149,22 @@ if __name__ == "__main__":
         (1000, 8, 8),
         (1000, 25, 8),
         (1000, 50, 8),
-    ]  # d, n, dimspace, dimsimplex,
+    ]  # d, n, dim_space, dim_simplex,
     seed_list = [i + 1 for i in range(20)]
 
     results_dir = "../results_synthetic/"
     subfunction.create_directory(dir_name=results_dir)
     start = time.time()
     for degree in degree_list:
-        for (n, dimspace, dimsimplex) in setting_tuple_list:
+        for (n, dim_space, dim_simplex) in setting_tuple_list:
             for seed in seed_list:
-                print("(D,N,L,M,seed):", degree, n, dimspace, dimsimplex, seed)
+                print("(D,N,L,M,seed):", degree, n, dim_space, dim_simplex, seed)
                 start_lap = time.time()
                 experiments_synthetic_data(
                     n=n,
                     degree=degree,
-                    dimspace=dimspace,
-                    dimsimplex=dimsimplex,
+                    dim_space=dim_space,
+                    dim_simplex=dim_simplex,
                     sigma=0.1,
                     seed=seed,
                     method="borges",
@@ -174,8 +174,8 @@ if __name__ == "__main__":
                 experiments_synthetic_data(
                     n=n,
                     degree=degree,
-                    dimspace=dimspace,
-                    dimsimplex=dimsimplex,
+                    dim_space=dim_space,
+                    dim_simplex=dim_simplex,
                     sigma=0.1,
                     seed=seed,
                     method="inductive",
@@ -185,8 +185,8 @@ if __name__ == "__main__":
                 experiments_synthetic_data(
                     n=n,
                     degree=degree,
-                    dimspace=dimspace,
-                    dimsimplex=dimsimplex,
+                    dim_space=dim_space,
+                    dim_simplex=dim_simplex,
                     sigma=0.1,
                     seed=seed,
                     method="inductive",

@@ -308,11 +308,11 @@ class Normalizer:
 
 
 class SyntheticData:
-    def __init__(self, degree, dimspace, dimsimplex):
+    def __init__(self, degree, dim_space, dim_simplex):
         self.degree = degree
-        self.dimspace = dimspace
-        self.dimsimplex = dimsimplex
-        self.objective_function_indices_list = list(range(self.dimsimplex))
+        self.dim_space = dim_space
+        self.dim_simplex = dim_simplex
+        self.objective_function_indices_list = list(range(self.dim_simplex))
 
         self.subproblem_indices_list = []
         for i in range(1, len(self.objective_function_indices_list) + 1):
@@ -320,16 +320,16 @@ class SyntheticData:
                 self.subproblem_indices_list.append(c)
 
         # prepare class to generate data points on bezier simplex
-        self.uniform_sampling = sampling.UniformSampling(dimension=self.dimsimplex)
+        self.uniform_sampling = sampling.UniformSampling(dimension=self.dim_simplex)
         self.bezier_simplex = model.BezierSimplex(
-            dimSpace=self.dimspace, dimSimplex=self.dimsimplex, degree=self.degree
+            dim_space=self.dim_space, dim_simplex=self.dim_simplex, degree=self.degree
         )
         self.monomial_degree_list = list(
-            subfunction.BezierIndex(dim=self.dimsimplex, deg=self.degree)
+            subfunction.BezierIndex(dim=self.dim_simplex, deg=self.degree)
         )
         # generate true control points
         generate_control_point = model.GenerateControlPoint(
-            dimSpace=self.dimspace, dimSimplex=self.dimsimplex, degree=self.degree
+            dim_space=self.dim_space, dim_simplex=self.dim_simplex, degree=self.degree
         )
         self.control_point_true = generate_control_point.simplex()
 
@@ -341,8 +341,8 @@ class SyntheticData:
         )
         data = self.bezier_simplex.generate_points(c=self.control_point_true, tt=param)
         epsilon = np.random.multivariate_normal(
-            [0] * self.dimspace,
-            np.identity(self.dimspace) * (sigma ** 2),
+            [0] * self.dim_space,
+            np.identity(self.dim_space) * (sigma ** 2),
             n,
         )
         data += epsilon
@@ -352,7 +352,7 @@ class SyntheticData:
         param = {}
         data = {}
         for c in self.subproblem_indices_list:
-            if len(c) <= min(self.dimsimplex, self.degree):
+            if len(c) <= min(self.dim_simplex, self.degree):
                 n = sample_size_list[len(c) - 1]
                 seed += 30
                 z = self.uniform_sampling.subsimplex(indices=c, num_sample=n, seed=seed)
@@ -361,8 +361,8 @@ class SyntheticData:
                     c=self.control_point_true, tt=param[c]
                 )
                 epsilon = np.random.multivariate_normal(
-                    [0] * self.dimspace,
-                    np.identity(self.dimspace) * (sigma ** 2),
+                    [0] * self.dim_space,
+                    np.identity(self.dim_space) * (sigma ** 2),
                     n,
                 )
                 data[c] = b + epsilon
@@ -371,7 +371,7 @@ class SyntheticData:
 
 if __name__ == "__main__":
     eps = -0.1
-    dimsimplex = 5
+    dim_simplex = 5
     d = Dataset("../data/raw/S3TD.pf")
-    indices_list = list(range(dimsimplex))
+    indices_list = list(range(dim_simplex))
     subproblem_indices_list = []

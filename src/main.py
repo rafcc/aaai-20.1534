@@ -35,10 +35,10 @@ def main(ymlfilename, resultdir, borges_flag=1):
             subproblem_indices_list.append(c)
     uniform_sampling = sampling.UniformSampling(dimension=DIMENSION_SIMPLEX)
     bezier_simplex = model.BezierSimplex(
-        dimSpace=DIMENSION_SPACE, dimSimplex=DIMENSION_SIMPLEX, degree=DEGREE
+        dim_space=DIMENSION_SPACE, dim_simplex=DIMENSION_SIMPLEX, degree=DEGREE
     )
     borges_pastva_trainer = trainer.BorgesPastvaTrainer(
-        dimSpace=DIMENSION_SPACE, dimSimplex=DIMENSION_SIMPLEX, degree=DEGREE
+        dim_space=DIMENSION_SPACE, dim_simplex=DIMENSION_SIMPLEX, degree=DEGREE
     )
     monomial_degree_list = list(
         subfunction.BezierIndex(dim=DIMENSION_SIMPLEX, deg=DEGREE)
@@ -46,7 +46,7 @@ def main(ymlfilename, resultdir, borges_flag=1):
 
     # generate true control points
     generate_control_point = model.GenerateControlPoint(
-        dimSpace=DIMENSION_SPACE, dimSimplex=DIMENSION_SIMPLEX, degree=DEGREE
+        dim_space=DIMENSION_SPACE, dim_simplex=DIMENSION_SIMPLEX, degree=DEGREE
     )
     if SIMPLEX_TYPE == "linear":
         control_point_true = generate_control_point.simplex()
