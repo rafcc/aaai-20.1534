@@ -1,12 +1,7 @@
-import glob
-import os
-from itertools import combinations
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from mpl_toolkits.mplot3d import Axes3D
 
 
 def plot_pairplot(dname, ofname):

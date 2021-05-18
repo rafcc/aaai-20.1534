@@ -2,8 +2,6 @@ import pickle
 import time
 from itertools import combinations
 
-import generate_yaml
-import matplotlib.pyplot as plt
 import numpy as np
 import yaml
 
@@ -11,7 +9,6 @@ import model
 import sampling
 import subfunction
 import trainer
-import visualize
 
 
 def main(ymlfilename, resultdir, borges_flag=1):
@@ -56,6 +53,7 @@ def main(ymlfilename, resultdir, borges_flag=1):
         SEED = SEED + 5
     elif SIMPLEX_TYPE == "squareroot":
         control_point_true = generate_control_point.squareroot()
+
     # generate training data
     print("generating data start")
     start = time.time()

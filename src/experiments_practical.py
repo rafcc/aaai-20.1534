@@ -1,14 +1,10 @@
-import math
 import random
 import time
 from itertools import combinations
-from multiprocessing import Process
 
-import generate_yaml
 import yaml
 
 import data
-import main
 import model
 import sampling
 import subfunction
@@ -31,11 +27,7 @@ def sampling_data_and_param(d, p, n, seed):
     random.seed(seed)
     s = [i for i in range(d.shape[0])]
     s_ = random.sample(s, n)
-    # print(len(s_))
     return (d[s_, :], p[s_, :])
-
-
-# def calc_sampling_ratio(opt_flag,degree,dimsimplex):
 
 
 def experiments_practical_instances(

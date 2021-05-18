@@ -1,10 +1,8 @@
-import copy
 import os
 
 import numpy as np
 import sympy
 import yaml
-from scipy.optimize import minimize
 
 
 def create_directory(dir_name):
@@ -12,10 +10,6 @@ def create_directory(dir_name):
         os.makedirs(dir_name)
     else:
         pass
-
-
-def count_nonzero(a):
-    return np.count_nonzero(a)
 
 
 def nonzero_indices(a):

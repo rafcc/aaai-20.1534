@@ -1,12 +1,8 @@
-import math
 import time
-from multiprocessing import Process
 
-import generate_yaml
 import yaml
 
 import data
-import main
 import model
 import sampling
 import subfunction
@@ -23,9 +19,6 @@ def convert_params_to_string(
     s = s + "_N." + str(N)
     s = s + "_sigma." + str(sigma)
     return s
-
-
-# def calc_sampling_ratio(opt_flag,degree,dimsimplex):
 
 
 def experiments_synthetic_data(
@@ -60,6 +53,7 @@ def experiments_synthetic_data(
     synthetic_data = data.SyntheticData(
         degree=degree, dimspace=dimspace, dimsimplex=dimsimplex
     )
+
     # train
     if method == "borges":
         param_trn, data_trn = synthetic_data.sampling_borges(
@@ -78,8 +72,6 @@ def experiments_synthetic_data(
             indices_all=monomial_degree_list,
             indices_fix=[],
         )
-        # for key in control_point:
-        #    print(key,control_point[key])
     elif method == "inductive":
         # calculate sample size of each skeleton
         calc_sample_size = sampling.CalcSampleSize(degree=degree, dimsimplex=dimsimplex)
@@ -105,6 +97,7 @@ def experiments_synthetic_data(
         )
     else:
         pass
+
     # generate test data which does not include gaussian noise
     param_tst, data_tst = synthetic_data.sampling_borges(
         n=10000, seed=seed * 2, sigma=0
@@ -114,7 +107,7 @@ def experiments_synthetic_data(
     )
     data_pred = bezier_simplex.generate_points(c=control_point, tt=param_tst)
     l2_risk = subfunction.calculate_l2_expected_error(true=data_tst, pred=data_pred)
-    # print(l2_risk)
+
     # output result
     settings = {}
     settings["n"] = n
